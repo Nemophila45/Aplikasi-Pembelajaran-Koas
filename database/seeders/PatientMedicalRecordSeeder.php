@@ -15,29 +15,29 @@ class PatientMedicalRecordSeeder extends Seeder
      */
     public function run(): void
     {
-        // $faker = FakerFactory::create('id_ID');
-        // $faker->unique(true);
+        $faker = FakerFactory::create('id_ID');
+        $faker->unique(true);
 
-        // Bersihkan data dummy pasien & riwayat, tidak menambah data baru
+        // Reset data agar seeding berulang tidak bentrok constraint unik
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         DB::table('medical_records')->truncate();
         DB::table('patients')->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        // $patients = Patient::factory()
-        //     ->count(100)
-        //     ->create();
+        $patients = Patient::factory()
+            ->count(100)
+            ->create();
 
-        // $patients->each(function (Patient $patient) use ($faker): void {
-        //     $recordCount = $faker->numberBetween(1, 4);
+        $patients->each(function (Patient $patient) use ($faker): void {
+            $recordCount = $faker->numberBetween(1, 4);
 
-        //     $records = MedicalRecord::factory()
-        //         ->count($recordCount)
-        //         ->make([
-        //             'patient_id' => $patient->id,
-        //         ]);
+            $records = MedicalRecord::factory()
+                ->count($recordCount)
+                ->make([
+                    'patient_id' => $patient->id,
+                ]);
 
-        //     $patient->medicalRecords()->saveMany($records);
-        // });
+            $patient->medicalRecords()->saveMany($records);
+        });
     }
 }
