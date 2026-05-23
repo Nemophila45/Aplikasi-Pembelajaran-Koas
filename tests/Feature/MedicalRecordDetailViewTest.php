@@ -36,7 +36,7 @@ class MedicalRecordDetailViewTest extends TestCase
 
         [$patient, $medicalRecord] = $this->createPatientWithMedicalRecord();
 
-        foreach ([UserRole::ADMIN, UserRole::DOCTOR, UserRole::KOAS, UserRole::MANAGEMENT] as $role) {
+        foreach ([UserRole::ADMIN, UserRole::DOCTOR, UserRole::KOAS] as $role) {
             $user = User::factory()->create([
                 'role' => $role,
             ]);
@@ -62,17 +62,37 @@ class MedicalRecordDetailViewTest extends TestCase
                 $response->getContent()
             );
         }
+
+        $management = User::factory()->create([
+            'role' => UserRole::MANAGEMENT,
+        ]);
+
+        Auth::setUser($management);
+
+        $managementResponse = $this->app->handle(
+            Request::create("/patients/{$patient->id}/records/{$medicalRecord->id}", 'GET')
+        );
+
+        $this->assertSame(200, $managementResponse->getStatusCode());
+        $this->assertStringContainsString('Detail Riwayat Medis', $managementResponse->getContent());
+        $this->assertStringContainsString('Lampiran tersedia, akses dibatasi.', $managementResponse->getContent());
+        $this->assertStringNotContainsString('Lihat Lampiran', $managementResponse->getContent());
+        $this->assertStringNotContainsString('Unduh Lampiran', $managementResponse->getContent());
+        $this->assertStringNotContainsString(
+            route('patients.records.download', [$patient, $medicalRecord]),
+            $managementResponse->getContent()
+        );
     }
 
     public function test_main_patient_table_shows_detail_button_and_hides_catatan_column(): void
     {
         Artisan::call('migrate', ['--force' => true]);
 
-        $doctor = User::factory()->create([
-            'role' => UserRole::DOCTOR,
+        $management = User::factory()->create([
+            'role' => UserRole::MANAGEMENT,
         ]);
 
-        Auth::setUser($doctor);
+        Auth::setUser($management);
         [$patient, $medicalRecord] = $this->createPatientWithMedicalRecord();
 
         $response = $this->app->handle(
@@ -83,6 +103,7 @@ class MedicalRecordDetailViewTest extends TestCase
         $this->assertStringContainsString(route('patients.records.show', [$patient, $medicalRecord]), $response->getContent());
         $this->assertStringContainsString('Detail', $response->getContent());
         $this->assertStringNotContainsString('<th class="px-5 py-3 text-left">Catatan</th>', $response->getContent());
+        $this->assertStringContainsString('Lampiran tersedia, akses dibatasi', $response->getContent());
     }
 
     /**

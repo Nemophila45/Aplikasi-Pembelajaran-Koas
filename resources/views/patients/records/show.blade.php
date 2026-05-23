@@ -5,7 +5,7 @@
 @section('content')
     @php
         $canEditRecord = auth()->check() && auth()->user()->hasAnyRole('admin', 'doctor');
-        $canPreviewAttachment = auth()->check() && auth()->user()->hasAnyRole('admin', 'doctor', 'koas', 'management');
+        $canAccessAttachments = auth()->check() && auth()->user()->hasAnyRole('admin', 'doctor', 'koas');
         $attachmentName = $medicalRecord->attachment_path ? basename($medicalRecord->attachment_path) : null;
     @endphp
 
@@ -74,24 +74,26 @@
             <div class="mt-6 rounded-2xl bg-slate-50 px-4 py-4">
                 <p class="text-xs uppercase tracking-[0.2em] text-slate-500">Lampiran</p>
                 @if ($medicalRecord->attachment_path)
-                    <p class="mt-2 text-sm text-slate-600">
-                        File:
-                        <span class="font-semibold text-slate-700">{{ $attachmentName }}</span>
-                    </p>
-                    <div class="mt-4 flex flex-wrap gap-3">
-                        @if ($canPreviewAttachment)
+                    @if ($canAccessAttachments)
+                        <p class="mt-2 text-sm text-slate-600">
+                            File:
+                            <span class="font-semibold text-slate-700">{{ $attachmentName }}</span>
+                        </p>
+                        <div class="mt-4 flex flex-wrap gap-3">
                             <a href="{{ route('patients.records.download', [$patient, $medicalRecord, 'inline' => 1]) }}"
                                target="_blank"
                                rel="noopener"
                                class="inline-flex items-center rounded-full border border-emerald-200 px-4 py-2 text-sm font-semibold text-emerald-600 hover:bg-emerald-500 hover:text-white transition">
                                 Lihat Lampiran
                             </a>
-                        @endif
-                        <a href="{{ route('patients.records.download', [$patient, $medicalRecord]) }}"
-                           class="inline-flex items-center rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-200 hover:bg-emerald-600 transition">
-                            Unduh Lampiran
-                        </a>
-                    </div>
+                            <a href="{{ route('patients.records.download', [$patient, $medicalRecord]) }}"
+                               class="inline-flex items-center rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-200 hover:bg-emerald-600 transition">
+                                Unduh Lampiran
+                            </a>
+                        </div>
+                    @else
+                        <p class="mt-2 text-sm text-slate-500">Lampiran tersedia, akses dibatasi.</p>
+                    @endif
                 @else
                     <p class="mt-2 text-sm text-slate-500">Tidak ada lampiran pada riwayat ini.</p>
                 @endif

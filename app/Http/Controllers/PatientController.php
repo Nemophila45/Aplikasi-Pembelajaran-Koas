@@ -83,7 +83,7 @@ class PatientController extends Controller
 
             return [
                 'value' => "{$start} - {$end}",
-                'label' => "{$start} – {$end} tahun",
+                'label' => "{$start} - {$end} tahun",
             ];
         });
 

@@ -29,11 +29,11 @@ class MedicalRecordAttachmentAccessTest extends TestCase
         $this->assertSame(route('login'), $response->headers->get('Location'));
     }
 
-    public function test_internal_roles_can_download_attachment_through_controller(): void
+    public function test_admin_doctor_and_koas_can_download_attachment_through_controller(): void
     {
         Artisan::call('migrate', ['--force' => true]);
 
-        foreach ([UserRole::ADMIN, UserRole::DOCTOR, UserRole::KOAS, UserRole::MANAGEMENT] as $role) {
+        foreach ([UserRole::ADMIN, UserRole::DOCTOR, UserRole::KOAS] as $role) {
             [$patient, $medicalRecord] = $this->createPatientWithAttachment();
 
             $user = User::factory()->create([
@@ -52,6 +52,25 @@ class MedicalRecordAttachmentAccessTest extends TestCase
                 (string) $response->headers->get('Content-Disposition')
             );
         }
+    }
+
+    public function test_management_is_forbidden_from_attachment_download_route(): void
+    {
+        Artisan::call('migrate', ['--force' => true]);
+
+        [$patient, $medicalRecord] = $this->createPatientWithAttachment();
+
+        $user = User::factory()->create([
+            'role' => UserRole::MANAGEMENT,
+        ]);
+
+        Auth::setUser($user);
+
+        $response = $this->app->handle(
+            Request::create("/patients/{$patient->id}/records/{$medicalRecord->id}/download", 'GET')
+        );
+
+        $this->assertSame(403, $response->getStatusCode());
     }
 
     public function test_public_storage_path_does_not_expose_medical_record_attachment(): void

@@ -5,10 +5,10 @@
 @section('content')
     @php
         $canCreateRecord = auth()->check() && auth()->user()->hasAnyRole('admin', 'doctor', 'koas');
-        $canViewRecordDetail = auth()->check() && auth()->user()->hasAnyRole('admin', 'doctor', 'koas', 'management');
+        $canViewMedicalRecords = auth()->check() && auth()->user()->hasAnyRole('admin', 'doctor', 'koas', 'management');
+        $canAccessAttachments = auth()->check() && auth()->user()->hasAnyRole('admin', 'doctor', 'koas');
         $canEditRecord = auth()->check() && auth()->user()->hasAnyRole('admin', 'doctor');
         $canDeleteRecord = $canEditRecord;
-        $canPreviewAttachment = auth()->check() && auth()->user()->hasAnyRole('admin', 'doctor', 'koas');
     @endphp
     <div class="space-y-8" id="riwayat">
         <div class="rounded-3xl border border-emerald-100 bg-white/90 p-6 shadow-xl shadow-emerald-100">
@@ -109,7 +109,7 @@
                                 <td class="px-5 py-4 text-slate-700">{{ $record->diagnosa }}</td>
                                 <td class="px-5 py-4 text-slate-700">{{ $record->dokter }}</td>
                                 <td class="px-5 py-4">
-                                    @if ($record->attachment_path && $canPreviewAttachment)
+                                    @if ($record->attachment_path && $canAccessAttachments)
                                         <div class="flex items-center gap-2">
                                             <a href="{{ route('patients.records.download', [$patient, $record, 'inline' => 1]) }}"
                                                target="_blank"
@@ -132,14 +132,14 @@
                                             </a>
                                         </div>
                                     @elseif ($record->attachment_path)
-                                        <span class="text-xs text-slate-400">Terlampir</span>
+                                        <span class="text-xs text-slate-500">Lampiran tersedia, akses dibatasi</span>
                                     @else
                                         <span class="text-xs text-slate-400">-</span>
                                     @endif
                                 </td>
                                 <td class="px-5 py-4">
                                     <div class="flex flex-wrap items-center gap-2">
-                                        @if ($canViewRecordDetail)
+                                        @if ($canViewMedicalRecords)
                                             <a href="{{ route('patients.records.show', [$patient, $record]) }}"
                                                class="inline-flex items-center rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-slate-700 hover:bg-slate-100 transition">
                                                 Detail
