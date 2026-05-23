@@ -120,6 +120,19 @@ class PatientController extends Controller
     }
 
     /**
+     * Detail riwayat medis.
+     */
+    public function showRecord(Patient $patient, MedicalRecord $medicalRecord): View
+    {
+        $this->ensureRecordBelongsToPatient($medicalRecord, $patient);
+
+        return view('patients.records.show', [
+            'patient' => $patient,
+            'medicalRecord' => $medicalRecord,
+        ]);
+    }
+
+    /**
      * Form tambah pasien.
      */
     public function create(): View

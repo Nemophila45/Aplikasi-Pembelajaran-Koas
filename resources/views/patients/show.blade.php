@@ -5,6 +5,7 @@
 @section('content')
     @php
         $canCreateRecord = auth()->check() && auth()->user()->hasAnyRole('admin', 'doctor', 'koas');
+        $canViewRecordDetail = auth()->check() && auth()->user()->hasAnyRole('admin', 'doctor', 'koas', 'management');
         $canEditRecord = auth()->check() && auth()->user()->hasAnyRole('admin', 'doctor');
         $canDeleteRecord = $canEditRecord;
         $canPreviewAttachment = auth()->check() && auth()->user()->hasAnyRole('admin', 'doctor', 'koas');
@@ -96,7 +97,6 @@
                             <th class="px-5 py-3 text-left">Keluhan</th>
                             <th class="px-5 py-3 text-left">Diagnosa</th>
                             <th class="px-5 py-3 text-left">Dokter</th>
-                            <th class="px-5 py-3 text-left">Catatan</th>
                             <th class="px-5 py-3 text-left">Lampiran</th>
                             <th class="px-5 py-3 text-left">Aksi</th>
                         </tr>
@@ -108,7 +108,6 @@
                                 <td class="px-5 py-4 text-slate-700">{{ $record->keluhan ?? '-' }}</td>
                                 <td class="px-5 py-4 text-slate-700">{{ $record->diagnosa }}</td>
                                 <td class="px-5 py-4 text-slate-700">{{ $record->dokter }}</td>
-                                <td class="px-5 py-4 text-slate-600">{{ $record->catatan ?? '-' }}</td>
                                 <td class="px-5 py-4">
                                     @if ($record->attachment_path && $canPreviewAttachment)
                                         <div class="flex items-center gap-2">
@@ -139,7 +138,13 @@
                                     @endif
                                 </td>
                                 <td class="px-5 py-4">
-                                    <div class="flex items-center gap-2">
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        @if ($canViewRecordDetail)
+                                            <a href="{{ route('patients.records.show', [$patient, $record]) }}"
+                                               class="inline-flex items-center rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-slate-700 hover:bg-slate-100 transition">
+                                                Detail
+                                            </a>
+                                        @endif
                                         @if ($canEditRecord)
                                             <a href="{{ route('patients.records.edit', [$patient, $record]) }}"
                                                class="inline-flex items-center rounded-full border border-emerald-200 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-emerald-600 hover:bg-emerald-500 hover:text-white transition">
@@ -162,7 +167,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-5 py-10 text-center text-slate-500">
+                                <td colspan="6" class="px-5 py-10 text-center text-slate-500">
                                     Belum ada riwayat medis.
                                 </td>
                             </tr>

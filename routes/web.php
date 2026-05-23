@@ -48,6 +48,9 @@ Route::middleware('auth')->group(function (): void {
     });
 
     Route::middleware('role:admin,doctor,koas,management')->group(function (): void {
+        Route::get('/patients/{patient}/records/{medicalRecord}', [PatientController::class, 'showRecord'])
+            ->name('patients.records.show');
+
         Route::get('/patients/{patient}/records/{medicalRecord}/download', [PatientController::class, 'downloadRecord'])
             ->name('patients.records.download');
     });
