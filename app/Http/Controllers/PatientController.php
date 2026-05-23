@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PatientController extends Controller
 {
@@ -89,7 +88,7 @@ class PatientController extends Controller
 
         $ageRanges->push([
             'value' => '101 - 150',
-            'label' => '100 + tahun',
+            'label' => '101+ tahun',
         ]);
 
         return view('patients.index', [
