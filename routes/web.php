@@ -5,15 +5,10 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PatientController;
-use App\Http\Controllers\VisitorNoteController;
 use Illuminate\Support\Facades\Route;
 
 // Redirect root langsung ke daftar pasien
 Route::redirect('/', '/patients');
-
-// Halaman publik catatan pengunjung
-Route::get('/visitor-notes', [VisitorNoteController::class, 'index'])
-    ->name('visitor-notes.index');
 
 // ======== Guest (belum login) ========
 Route::middleware('guest')->group(function (): void {
@@ -50,7 +45,9 @@ Route::middleware('auth')->group(function (): void {
 
         Route::post('/patients/{patient}/records', [PatientController::class, 'storeRecord'])
             ->name('patients.records.store');
+    });
 
+    Route::middleware('role:admin,doctor,koas,management')->group(function (): void {
         Route::get('/patients/{patient}/records/{medicalRecord}/download', [PatientController::class, 'downloadRecord'])
             ->name('patients.records.download');
     });

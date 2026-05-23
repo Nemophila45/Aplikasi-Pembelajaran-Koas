@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ActivityLog;
 use App\Models\MedicalRecord;
 use App\Models\Patient;
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,6 +16,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PatientController extends Controller
 {
+    private const ATTACHMENT_DISK = 'medical-records';
+
     /**
      * Tampilkan daftar pasien dengan pencarian.
      */
@@ -168,7 +171,7 @@ class PatientController extends Controller
         $data = $this->validatedRecord($request);
 
         if ($request->hasFile('attachment')) {
-            $data['attachment_path'] = $request->file('attachment')->store('medical-records', 'public');
+            $data['attachment_path'] = $request->file('attachment')->store('medical-records', self::ATTACHMENT_DISK);
         }
 
         $medicalRecord = $patient->medicalRecords()->create($data);
@@ -218,10 +221,8 @@ class PatientController extends Controller
         $data = $this->validatedRecord($request);
 
         if ($request->hasFile('attachment')) {
-            $data['attachment_path'] = $request->file('attachment')->store('medical-records', 'public');
-            if ($medicalRecord->attachment_path) {
-                Storage::disk('public')->delete($medicalRecord->attachment_path);
-            }
+            $data['attachment_path'] = $request->file('attachment')->store('medical-records', self::ATTACHMENT_DISK);
+            $this->deleteAttachmentFile($medicalRecord->attachment_path);
         }
 
         $medicalRecord->update($data);
@@ -260,6 +261,7 @@ class PatientController extends Controller
             'dokter' => $medicalRecord->dokter,
         ];
 
+        $this->deleteAttachmentFile($medicalRecord->attachment_path);
         $medicalRecord->delete();
 
         $this->logActivity(
@@ -282,15 +284,14 @@ class PatientController extends Controller
     {
         $this->ensureRecordBelongsToPatient($medicalRecord, $patient);
 
+        $disk = $this->attachmentDisk();
+
         abort_unless(
-            $medicalRecord->attachment_path && Storage::disk('public')->exists($medicalRecord->attachment_path),
+            $medicalRecord->attachment_path && $disk->exists($medicalRecord->attachment_path),
             404
         );
 
         $filename = basename($medicalRecord->attachment_path);
-
-        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
-        $disk = Storage::disk('public');
 
         $inline = $request->boolean('inline', false);
         $mime = $disk->mimeType($medicalRecord->attachment_path) ?? 'application/pdf';
@@ -356,10 +357,11 @@ class PatientController extends Controller
     {
         $validated = $request->validate([
             'tanggal_kunjungan' => ['required', 'date'],
+            'keluhan' => ['nullable', 'string', 'max:1000'],
             'diagnosa' => ['required', 'string', 'max:255'],
             'dokter' => ['required', 'string', 'max:255'],
             'catatan' => ['nullable', 'string'],
-            'attachment' => ['nullable', 'file', 'max:5120'],
+            'attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
         ]);
 
         unset($validated['attachment']);
@@ -373,6 +375,32 @@ class PatientController extends Controller
     private function ensureRecordBelongsToPatient(MedicalRecord $medicalRecord, Patient $patient): void
     {
         abort_unless($medicalRecord->patient_id === $patient->id, 404);
+    }
+
+    /**
+     * Storage khusus lampiran rekam medis.
+     */
+    private function attachmentDisk(): Filesystem
+    {
+        return Storage::disk(self::ATTACHMENT_DISK);
+    }
+
+    /**
+     * Hapus lampiran dari storage private dan cleanup file legacy di public disk.
+     */
+    private function deleteAttachmentFile(?string $attachmentPath): void
+    {
+        if (!$attachmentPath) {
+            return;
+        }
+
+        foreach ([self::ATTACHMENT_DISK, 'public'] as $diskName) {
+            $disk = Storage::disk($diskName);
+
+            if ($disk->exists($attachmentPath)) {
+                $disk->delete($attachmentPath);
+            }
+        }
     }
 
     private function logActivity(

@@ -26,6 +26,16 @@
             </label>
 
             <label class="block text-sm font-semibold text-emerald-600">
+                Keluhan Pasien
+                <textarea name="keluhan" rows="4"
+                          placeholder="Contoh: demam, batuk, atau nyeri pada bagian tertentu"
+                          class="mt-1 w-full rounded-2xl border border-emerald-200 bg-white px-4 py-2 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100">{{ old('keluhan', $medicalRecord->keluhan) }}</textarea>
+                @error('keluhan')
+                    <div class="mt-1 text-sm text-rose-600">{{ $message }}</div>
+                @enderror
+            </label>
+
+            <label class="block text-sm font-semibold text-emerald-600">
                 Diagnosa
                 <input type="text" name="diagnosa" value="{{ old('diagnosa', $medicalRecord->diagnosa) }}"
                        class="mt-1 w-full rounded-2xl border border-emerald-200 bg-white px-4 py-2 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100">

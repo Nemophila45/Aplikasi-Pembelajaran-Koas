@@ -31,6 +31,14 @@ class MedicalRecordFactory extends Factory
                 'Demam Berdarah',
                 'Anemia',
             ]),
+            'keluhan' => $this->faker->randomElement([
+                'Demam dan menggigil sejak 3 hari',
+                'Batuk berdahak dan pilek',
+                'Nyeri ulu hati setelah makan',
+                'Sakit kepala dan pusing',
+                'Sesak napas saat aktivitas',
+                'Lemas dan nafsu makan menurun',
+            ]),
             'dokter' => 'dr. ' . $this->faker->lastName(),
             'catatan' => $this->faker->sentence(),
         ];

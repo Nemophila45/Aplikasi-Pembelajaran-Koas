@@ -2,18 +2,19 @@
 
 namespace Tests\Feature;
 
-// use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {
     /**
-     * A basic test example.
+     * Root route should redirect into the authenticated area.
      */
     public function test_the_application_returns_a_successful_response(): void
     {
-        $response = $this->get('/');
+        $response = $this->app->handle(Request::create('/', 'GET'));
 
-        $response->assertStatus(200);
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertSame('/patients', $response->headers->get('Location'));
     }
 }

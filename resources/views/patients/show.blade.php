@@ -93,6 +93,7 @@
                     <thead class="bg-emerald-50/70 text-xs font-semibold uppercase tracking-widest text-emerald-600">
                         <tr>
                             <th class="px-5 py-3 text-left">Tanggal</th>
+                            <th class="px-5 py-3 text-left">Keluhan</th>
                             <th class="px-5 py-3 text-left">Diagnosa</th>
                             <th class="px-5 py-3 text-left">Dokter</th>
                             <th class="px-5 py-3 text-left">Catatan</th>
@@ -104,6 +105,7 @@
                         @forelse ($medicalRecords as $record)
                             <tr class="hover:bg-emerald-50/60 transition">
                                 <td class="px-5 py-4 font-semibold text-slate-800">{{ $record->tanggal_kunjungan->format('d/m/Y') }}</td>
+                                <td class="px-5 py-4 text-slate-700">{{ $record->keluhan ?? '-' }}</td>
                                 <td class="px-5 py-4 text-slate-700">{{ $record->diagnosa }}</td>
                                 <td class="px-5 py-4 text-slate-700">{{ $record->dokter }}</td>
                                 <td class="px-5 py-4 text-slate-600">{{ $record->catatan ?? '-' }}</td>
@@ -160,7 +162,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-5 py-10 text-center text-slate-500">
+                                <td colspan="7" class="px-5 py-10 text-center text-slate-500">
                                     Belum ada riwayat medis.
                                 </td>
                             </tr>
